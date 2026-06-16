@@ -18,7 +18,7 @@ from deep_translator import GoogleTranslator
 # NOTE: Keep your existing Groq client line with your API key.
 # For safety, we show a placeholder here. Replace with your current line.
 # client = groq.Groq(api_key="YOUR_GROQ_KEY")
-client = groq.Groq(api_key="your Groq API key here")  # Replace with your actual Groq API key
+client = groq.Groq(api_key=os.getenv("GROQ_API_KEY"))  
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ------------------------------- Data & Embeddings ---------------------------
