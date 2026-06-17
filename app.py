@@ -1,5 +1,3 @@
-
-
 import gradio as gr
 import markdown
 from sentence_transformers import SentenceTransformer
@@ -13,12 +11,16 @@ from pdf2image import convert_from_path
 from PIL import Image
 import io
 from deep_translator import GoogleTranslator
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # NOTE: Keep your existing Groq client line with your API key.
 # For safety, we show a placeholder here. Replace with your current line.
 # client = groq.Groq(api_key="YOUR_GROQ_KEY")
-client = groq.Groq(api_key=os.getenv("GROQ_API_KEY"))  
+client = groq.Groq(api_key=os.getenv("GROQ_API_KEY"))
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ------------------------------- Data & Embeddings ---------------------------
@@ -280,28 +282,44 @@ def render_chat(chat_state):
     for speaker, msg in chat_state:
         msg_html = markdown.markdown(msg, extensions=["tables"])  # allow Markdown tables
         # Force bold tags to white text
-        msg_html = msg_html.replace("", "") \
-                           .replace("", "")
+        msg_html = msg_html.replace("<strong>", "<strong style='color:white !important;'>") \
+                           .replace("<b>", "<b style='color:white !important;'>")
 
         if speaker == "You":
             html += f"""
-            
-                
-                    
+            <div style='text-align: right; margin: 5px;'>
+                <div class='chat-bubble' style='display: inline-block;
+                           background-color: #C1232C !important;
+                           border: 2px solid #C1232C !important;
+                           padding: 10px;
+                           border-radius: 10px;
+                           max-width: 70%;
+                           word-wrap: break-word;'>
+                    <div style="color: white !important;
+                                font-weight: 500;
+                                text-shadow: none;">
                         {msg_html}
-                    
-                
-            
+                    </div>
+                </div>
+            </div>
             """
         else:
             html += f"""
-            
-                
-                    
+            <div style='text-align: left; margin: 5px;'>
+                <div class='chat-bubble' style='display: inline-block;
+                           background-color: #C1232C !important;
+                           border: 2px solid #C1232C !important;
+                           padding: 10px;
+                           border-radius: 10px;
+                           max-width: 70%;
+                           word-wrap: break-word;'>
+                    <div style="color: white !important;
+                                font-weight: 500;
+                                text-shadow: none;">
                         {msg_html}
-                    
-                
-            
+                    </div>
+                </div>
+            </div>
             """
     return html
 
@@ -463,7 +481,7 @@ def chatbot_response(user_message, chat_state, context_state):
         "What would you like to change? You can say: \n"
         "• `5 pages` or `500 words` to change notes length\n"
         "• `2 days` or `1 week` to change schedule\n"
-        "• `new subject: ` with optional topics\n"
+        "• `new subject: <name>` with optional topics\n"
         "• Or say `yes` if it's enough and we'll move to the next subject."
     )
     reply = translate_text(reply, context_state.get("language", "english"))
@@ -834,11 +852,11 @@ with gr.Blocks(css=css) as demo:
             pass
         with gr.Column(scale=3):
             gr.Markdown("""
-            
-              ────୨ৎ────
-              HALO
-              . . . . . ╰──╮╭──╯ . . . . .
-            """)
+            <div id='halo-title'>
+              <div class="halo-deco">────୨ৎ────</div>
+              <div class="halo-main">HALO</div>
+              <div class="halo-deco">. . . . . ╰──╮╭──╯ . . . . .</div>
+            </div>""")
         with gr.Column(scale=1):
             pass
 
@@ -876,16 +894,3 @@ with gr.Blocks(css=css) as demo:
     )
 if __name__ == "__main__":
     demo.launch()
-     
-
-!pip install markdown
-!pip install sentence-transformers
-!pip install faiss-cpu
-!pip install groq
-!pip install groq
-!pip install sentence-transformers faiss-cpu requests markdown
-!pip install PyMuPDF
-!apt-get install -y tesseract-ocr
-!pip install pytesseract pdf2image Pillow
-!pip install deep-translator
-     

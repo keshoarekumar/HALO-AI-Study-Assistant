@@ -1,268 +1,101 @@
-# HALO - AI-Powered Study Assistant
+# HALO – AI Study Assistant
 
-HALO (Helping Academic Learning Optimally) is an AI-powered study assistant designed to help students generate study notes, create personalized study schedules, analyze PDFs and images, and learn in multiple languages through an interactive chatbot interface.
+HALO is a conversational AI chatbot that generates personalized study notes and day-wise study schedules for any subject, using the Groq LLM API, semantic retrieval (FAISS + Sentence Transformers), and OCR-based file upload support.
 
-Built using Python, Gradio, Groq LLM, FAISS, Sentence Transformers, OCR, and Translation APIs, HALO provides an intelligent learning experience for students preparing for exams and academic coursework.
+## Web UI
 
----
+![HALO Web UI](screenshot.png)
+
+The interface is built with Gradio:
+- **Title banner** – "HALO" displayed in a decorative red theme
+- **Chat window** – conversation bubbles between you and HALO, supporting Markdown (including tables for schedules)
+- **Message box** – type your subject, topics, or adjustment commands (e.g. `5 pages`, `2 days`)
+- **🔍 button** – sends your message
+- **⏏ upload button** – upload a PDF or image; HALO extracts the subject/topics via OCR and generates notes + schedule automatically
 
 ## Features
 
-### AI Notes Generation
-- Generate detailed study notes for any subject.
-- Supports custom topics and syllabus-based learning.
-- Automatically detects programming-related subjects and includes code examples.
+- Generates study notes for any subject via Groq (`llama-3.1-8b-instant`)
+- Generates a day-wise study schedule as a Markdown table
+- Upload PDFs or images (PNG/JPG) — text/subject/topics are extracted automatically (with OCR fallback for scanned PDFs)
+- Adjust notes length anytime: `5 pages`, `500 words`
+- Adjust schedule length anytime: `2 days`, `1 week`
+- Switch to a new subject mid-conversation: `new subject: Physics topics include Kinematics, Optics`
+- Change response language anytime: `change language to French`
+- Hybrid retrieval (sparse keyword + dense FAISS vector search) used as grounding context for note generation
 
-### Personalized Study Schedule
-- Creates day-wise study plans.
-- Generates structured schedules based on user-defined duration.
-- Optimized for consistent daily study sessions.
+## Project Structure
 
-### PDF Analysis
-- Upload PDF files.
-- Extracts text using PyMuPDF.
-- OCR fallback for scanned PDFs.
-
-### Image-to-Text OCR
-- Upload PNG, JPG, and JPEG files.
-- Extract text from images using Tesseract OCR.
-
-### Multilingual Learning
-- Change chatbot language dynamically.
-- Supports automatic translation of notes and schedules.
-
-### Intelligent Subject Detection
-- Detects subjects and topics from natural language.
-- Supports switching between multiple subjects seamlessly.
-
-### Retrieval-Augmented Generation (RAG)
-- Uses FAISS vector search.
-- Uses Sentence Transformers for semantic retrieval.
-- Retrieves relevant educational context before generating responses.
-
-### Interactive Chat Interface
-- Built using Gradio.
-- Real-time chatbot interaction.
-- Clean and responsive user experience.
-
----
-
-## Tech Stack
-
-### Frontend
-- Gradio
-
-### AI & LLM
-- Groq API
-- Llama 3.1 Models
-
-### Retrieval System
-- FAISS
-- Sentence Transformers
-
-### OCR & Document Processing
-- PyMuPDF
-- Tesseract OCR
-- pdf2image
-- Pillow
-
-### Translation
-- Deep Translator
-
-### Programming Language
-- Python
-
----
-
-## Project Architecture
-
-```text
-User
-  ↓
-HALO Chat Interface (Gradio)
-  ↓
-Subject & Intent Detection
-  ↓
-Document Retrieval (FAISS)
-  ↓
-Sentence Transformer Embeddings
-  ↓
-Groq LLM
-  ↓
-Translation Layer
-  ↓
-Notes & Study Schedule Generation
-  ↓
-User Response
+```
+halo-study-assistant/
+├── app.py              # Main application (Gradio UI + chatbot logic)
+├── requirements.txt    # Python dependencies
+├── .env.example        # Template for your Groq API key
+├── .gitignore
+├── screenshot.png       # Web UI screenshot
+└── README.md
 ```
 
----
+## Setup & Installation
 
-## User Interface
-
-### Home Screen
-The HALO chatbot welcomes users and accepts natural language study requests.
-
-### Chat Interface
-Users can:
-- Ask for notes
-- Generate schedules
-- Change languages
-- Switch subjects
-
-### File Upload
-Users can upload:
-- PDF files
-- Images
-
-HALO automatically extracts text and generates study materials from uploaded content.
-
----
-
-## Installation
-
-### Clone Repository
-
+### 1. Clone the repo
 ```bash
-git clone https://github.com/yourusername/HALO-AI-Study-Assistant.git
-
-cd HALO-AI-Study-Assistant
+git clone https://github.com/<your-username>/halo-study-assistant.git
+cd halo-study-assistant
 ```
 
-### Create Virtual Environment
-
-Windows
-
+### 2. Create a virtual environment
 ```bash
 python -m venv venv
-
-venv\Scripts\activate
+source venv/bin/activate      # Windows: venv\Scripts\activate
 ```
 
-Linux / macOS
-
-```bash
-python3 -m venv venv
-
-source venv/bin/activate
-```
-
-### Install Dependencies
-
+### 3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
----
+### 4. Install system dependencies (required by OCR/PDF features)
 
-## Environment Variables
+**Tesseract OCR**
+- macOS: `brew install tesseract`
+- Ubuntu/Debian: `sudo apt install tesseract-ocr`
+- Windows: install from https://github.com/UB-Mannheim/tesseract/wiki and add to PATH
 
-Create a `.env` file:
+**Poppler** (required by `pdf2image`)
+- macOS: `brew install poppler`
+- Ubuntu/Debian: `sudo apt install poppler-utils`
+- Windows: download from https://github.com/oschwartz10612/poppler-windows/releases and add `bin/` to PATH
 
-```env
-GROQ_API_KEY=your_groq_api_key
+### 5. Configure your API key
+```bash
+cp .env.example .env
+```
+Open `.env` and paste your Groq API key (get one free at https://console.groq.com/keys):
+```
+GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
----
-
-## Run Application
-
+### 6. Run the app
 ```bash
 python app.py
 ```
+Open the URL shown in the terminal (default: http://127.0.0.1:7860) in your browser.
 
-The application will launch locally in your browser using Gradio.
+## Notes on the API Key Change
 
----
+The only change made to the original code is the Groq client initialization line, so the key is read securely from your `.env` file instead of being hardcoded:
 
-## Supported Commands
+```python
+# Before
+client = groq.Groq(api_key="your Groq API KEY")
 
-### Generate Notes
-
-```text
-Notes on Calculus
+# After
+client = groq.Groq(api_key=os.getenv("GROQ_API_KEY"))
 ```
 
-### Generate Notes with Topics
-
-```text
-Physics topics include Kinematics, Optics
-```
-
-### Change Notes Length
-
-```text
-5 pages
-```
-
-or
-
-```text
-1000 words
-```
-
-### Change Study Duration
-
-```text
-14 days
-```
-
-### Change Language
-
-```text
-change language to tamil
-```
-
-### Switch Subject
-
-```text
-new subject: Data Structures
-```
-
----
-
-## File Upload Support
-
-Supported Formats:
-
-```text
-PDF
-PNG
-JPG
-JPEG
-```
-
-HALO automatically:
-- Extracts text
-- Detects subject
-- Identifies topics
-- Generates notes
-- Creates study schedules
-
----
-
-## Future Improvements
-
-- ChromaDB Integration
-- Multi-PDF Knowledge Base
-- User Authentication
-- Voice Input Support
-- Flashcard Generation
-- Quiz Generation
-- Export Notes to PDF
-- Advanced RAG Pipeline
-- Learning Analytics Dashboard
-
----
-
-## Author
-
-Keshoare
-
-Engineering Student | AI Enthusiast | Software Developer
-
----
+All other logic, functions, and UI code are unchanged from the original.
 
 ## License
 
-This project is intended for educational and portfolio purposes.
+MIT

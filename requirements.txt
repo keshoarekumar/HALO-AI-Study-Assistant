@@ -1,0 +1,12 @@
+gradio
+markdown
+sentence-transformers
+faiss-cpu
+groq
+PyMuPDF
+pytesseract
+pdf2image
+Pillow
+deep-translator
+python-dotenv
+torch
